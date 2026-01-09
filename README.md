@@ -1,6 +1,6 @@
 # DataFlow Analytics
 
-🔗 Live Demo: https://YOUR_USERNAME.github.io/dataflow-analytics/
+🔗 Live Demo: https://data-flow-analytics.my.canva.site/
 
 ## Overview
 DataFlow Analytics is a browser-based data analysis and dashboard
