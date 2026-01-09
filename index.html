@@ -1,0 +1,1393 @@
+<!doctype html>
+<html lang="en" class="h-full">
+ <head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>DataFlow Analytics - Professional Data Analysis</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+  <script src="/_sdk/element_sdk.js"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@300;400;500;600;700&amp;family=Comfortaa:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet">
+  <style>
+    body {
+      box-sizing: border-box;
+    }
+
+    * {
+      font-family: 'Quicksand', -apple-system, BlinkMacSystemFont, sans-serif;
+    }
+
+    .heading-font {
+      font-family: 'Comfortaa', cursive;
+    }
+
+    :root {
+      --bg-primary: #fef6f9;
+      --bg-card: #ffffff;
+      --accent-coral: #ff8fab;
+      --accent-sky: #a8d8ff;
+      --accent-mint: #b4f8c8;
+      --accent-peach: #ffc4a3;
+      --accent-lavender: #d4b5f7;
+      --text-primary: #4a5568;
+      --text-secondary: #718096;
+      --border-light: #f0e6ea;
+    }
+
+    body {
+      background: linear-gradient(135deg, #fef6f9 0%, #f0f4ff 50%, #f9fef6 100%);
+      color: var(--text-primary);
+      position: relative;
+      overflow-x: hidden;
+    }
+
+    /* Floating Cloud Animations */
+    .cloud {
+      position: absolute;
+      opacity: 0.4;
+      animation: float 20s infinite ease-in-out;
+      pointer-events: none;
+    }
+
+    .cloud1 { top: 10%; left: 5%; animation-delay: 0s; animation-duration: 25s; }
+    .cloud2 { top: 30%; right: 10%; animation-delay: 5s; animation-duration: 30s; }
+    .cloud3 { top: 60%; left: 15%; animation-delay: 10s; animation-duration: 28s; }
+    .cloud4 { top: 75%; right: 20%; animation-delay: 15s; animation-duration: 35s; }
+    .cloud5 { top: 50%; left: 50%; animation-delay: 8s; animation-duration: 32s; }
+
+    @keyframes float {
+      0%, 100% { transform: translateY(0) translateX(0) scale(1); }
+      25% { transform: translateY(-20px) translateX(10px) scale(1.05); }
+      50% { transform: translateY(-10px) translateX(-15px) scale(0.95); }
+      75% { transform: translateY(-25px) translateX(5px) scale(1.02); }
+    }
+
+    .card {
+      background: var(--bg-card);
+      border-radius: 30px;
+      box-shadow: 0 10px 40px rgba(167, 139, 250, 0.12);
+      transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+      border: 2px solid rgba(255, 255, 255, 0.8);
+      position: relative;
+      z-index: 1;
+    }
+
+    .card:hover {
+      transform: translateY(-8px);
+      box-shadow: 0 20px 60px rgba(167, 139, 250, 0.18);
+    }
+
+    .upload-area {
+      border: 3px dashed var(--border-light);
+      border-radius: 30px;
+      background: linear-gradient(135deg, rgba(255, 139, 171, 0.08) 0%, rgba(168, 216, 255, 0.08) 100%);
+      transition: all 0.3s ease;
+      cursor: pointer;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .upload-area::before {
+      content: '';
+      position: absolute;
+      top: -50%;
+      left: -50%;
+      width: 200%;
+      height: 200%;
+      background: radial-gradient(circle, rgba(255, 139, 171, 0.1) 0%, transparent 70%);
+      animation: pulse-glow 4s ease-in-out infinite;
+    }
+
+    @keyframes pulse-glow {
+      0%, 100% { transform: scale(1) rotate(0deg); opacity: 0.5; }
+      50% { transform: scale(1.2) rotate(180deg); opacity: 0.8; }
+    }
+
+    .upload-area:hover {
+      border-color: var(--accent-coral);
+      background: linear-gradient(135deg, rgba(255, 139, 171, 0.15) 0%, rgba(168, 216, 255, 0.15) 100%);
+      transform: scale(1.02);
+    }
+
+    .upload-area.dragging {
+      border-color: var(--accent-sky);
+      background: linear-gradient(135deg, rgba(168, 216, 255, 0.25) 0%, rgba(180, 248, 200, 0.25) 100%);
+      transform: scale(1.05);
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, var(--accent-coral) 0%, var(--accent-lavender) 100%);
+      color: white;
+      padding: 16px 32px;
+      border-radius: 50px;
+      border: none;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      box-shadow: 0 8px 20px rgba(255, 139, 171, 0.3);
+      font-size: 16px;
+    }
+
+    .btn-primary:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 12px 30px rgba(255, 139, 171, 0.4);
+    }
+
+    .btn-primary:active {
+      transform: translateY(-1px);
+    }
+
+    .btn-secondary {
+      background: white;
+      color: var(--text-primary);
+      padding: 14px 28px;
+      border-radius: 50px;
+      border: 2px solid var(--border-light);
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+
+    .btn-secondary:hover {
+      border-color: var(--accent-coral);
+      background: linear-gradient(135deg, rgba(255, 139, 171, 0.1) 0%, rgba(168, 216, 255, 0.1) 100%);
+      transform: translateY(-2px);
+    }
+
+    .tab-btn {
+      padding: 14px 28px;
+      background: white;
+      border: none;
+      color: var(--text-secondary);
+      font-weight: 600;
+      cursor: pointer;
+      border-radius: 20px;
+      transition: all 0.3s ease;
+      margin: 0 6px;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+    }
+
+    .tab-btn:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+    }
+
+    .tab-btn.active {
+      color: white;
+      transform: translateY(-3px);
+      box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+    }
+
+    .tab-btn.active.tab-overview {
+      background: linear-gradient(135deg, var(--accent-coral) 0%, #ff6b8f 100%);
+    }
+
+    .tab-btn.active.tab-charts {
+      background: linear-gradient(135deg, var(--accent-sky) 0%, #7ec8ff 100%);
+    }
+
+    .tab-btn.active.tab-data {
+      background: linear-gradient(135deg, var(--accent-mint) 0%, #8ff0b0 100%);
+    }
+
+    .tab-btn.active.tab-insights {
+      background: linear-gradient(135deg, var(--accent-peach) 0%, #ffab7a 100%);
+    }
+
+    .kpi-card {
+      background: linear-gradient(135deg, white 0%, rgba(255, 255, 255, 0.8) 100%);
+      border-radius: 25px;
+      padding: 28px;
+      transition: all 0.4s ease;
+      border: 2px solid rgba(255, 255, 255, 0.6);
+      box-shadow: 0 8px 30px rgba(0, 0, 0, 0.06);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .kpi-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 5px;
+      transition: all 0.3s ease;
+    }
+
+    .kpi-card-1::before { background: linear-gradient(90deg, var(--accent-coral) 0%, var(--accent-lavender) 100%); }
+    .kpi-card-2::before { background: linear-gradient(90deg, var(--accent-sky) 0%, var(--accent-mint) 100%); }
+    .kpi-card-3::before { background: linear-gradient(90deg, var(--accent-mint) 0%, var(--accent-sky) 100%); }
+    .kpi-card-4::before { background: linear-gradient(90deg, var(--accent-peach) 0%, var(--accent-coral) 100%); }
+
+    .kpi-card:hover {
+      transform: translateY(-8px) scale(1.02);
+      box-shadow: 0 15px 45px rgba(0, 0, 0, 0.12);
+    }
+
+    .stat-value {
+      font-size: 48px;
+      font-weight: 700;
+      font-family: 'Comfortaa', cursive;
+      background: linear-gradient(135deg, var(--accent-coral) 0%, var(--accent-lavender) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .input-field, .select-field {
+      background: white;
+      border: 2px solid var(--border-light);
+      border-radius: 20px;
+      padding: 14px 20px;
+      color: var(--text-primary);
+      width: 100%;
+      transition: all 0.3s ease;
+      font-weight: 500;
+    }
+
+    .input-field:focus, .select-field:focus {
+      outline: none;
+      border-color: var(--accent-coral);
+      box-shadow: 0 0 0 4px rgba(255, 139, 171, 0.1);
+    }
+
+    .chart-wrapper {
+      background: white;
+      border-radius: 25px;
+      padding: 28px;
+      position: relative;
+      height: 400px;
+      box-shadow: 0 8px 30px rgba(0, 0, 0, 0.06);
+      border: 2px solid rgba(255, 255, 255, 0.8);
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 18px;
+      border-radius: 50px;
+      font-size: 13px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .badge-coral {
+      background: linear-gradient(135deg, rgba(255, 139, 171, 0.2) 0%, rgba(255, 139, 171, 0.3) 100%);
+      color: #d64673;
+      border: 2px solid rgba(255, 139, 171, 0.4);
+    }
+
+    .badge-sky {
+      background: linear-gradient(135deg, rgba(168, 216, 255, 0.2) 0%, rgba(168, 216, 255, 0.3) 100%);
+      color: #4a90c9;
+      border: 2px solid rgba(168, 216, 255, 0.4);
+    }
+
+    .badge-mint {
+      background: linear-gradient(135deg, rgba(180, 248, 200, 0.2) 0%, rgba(180, 248, 200, 0.3) 100%);
+      color: #3d9e5f;
+      border: 2px solid rgba(180, 248, 200, 0.4);
+    }
+
+    .badge-peach {
+      background: linear-gradient(135deg, rgba(255, 196, 163, 0.2) 0%, rgba(255, 196, 163, 0.3) 100%);
+      color: #d97842;
+      border: 2px solid rgba(255, 196, 163, 0.4);
+    }
+
+    table {
+      width: 100%;
+      border-collapse: separate;
+      border-spacing: 0;
+    }
+
+    thead {
+      background: linear-gradient(135deg, rgba(255, 139, 171, 0.1) 0%, rgba(168, 216, 255, 0.1) 100%);
+      position: sticky;
+      top: 0;
+      z-index: 10;
+    }
+
+    th {
+      padding: 18px;
+      text-align: left;
+      font-weight: 700;
+      color: var(--text-primary);
+      border-bottom: 3px solid var(--border-light);
+      text-transform: uppercase;
+      font-size: 12px;
+      letter-spacing: 1px;
+      font-family: 'Comfortaa', cursive;
+    }
+
+    td {
+      padding: 18px;
+      border-bottom: 1px solid var(--border-light);
+      color: var(--text-secondary);
+    }
+
+    tr:hover td {
+      background: linear-gradient(135deg, rgba(255, 139, 171, 0.05) 0%, rgba(168, 216, 255, 0.05) 100%);
+    }
+
+    .insight-card {
+      background: white;
+      border-left: 5px solid var(--accent-coral);
+      border-radius: 20px;
+      padding: 28px;
+      margin-bottom: 24px;
+      box-shadow: 0 8px 30px rgba(0, 0, 0, 0.06);
+    }
+
+    .resource-card {
+      background: white;
+      border: 2px solid var(--border-light);
+      border-radius: 20px;
+      padding: 24px;
+      transition: all 0.3s ease;
+      display: flex;
+      align-items: center;
+      gap: 20px;
+      text-decoration: none;
+      color: inherit;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+    }
+
+    .resource-card:hover {
+      border-color: var(--accent-coral);
+      background: linear-gradient(135deg, rgba(255, 139, 171, 0.05) 0%, rgba(168, 216, 255, 0.05) 100%);
+      transform: translateX(10px) translateY(-3px);
+      box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+    }
+
+    .bounce {
+      animation: bounce 2s ease-in-out infinite;
+    }
+
+    @keyframes bounce {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-10px); }
+    }
+
+    .fade-in {
+      animation: fadeIn 0.6s ease-in;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(30px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .hidden {
+      display: none !important;
+    }
+
+    .table-container {
+      max-height: 600px;
+      overflow-y: auto;
+      border-radius: 20px;
+      border: 2px solid var(--border-light);
+      background: white;
+    }
+
+    .table-container::-webkit-scrollbar {
+      width: 10px;
+      height: 10px;
+    }
+
+    .table-container::-webkit-scrollbar-track {
+      background: var(--bg-primary);
+      border-radius: 10px;
+    }
+
+    .table-container::-webkit-scrollbar-thumb {
+      background: linear-gradient(135deg, var(--accent-coral) 0%, var(--accent-lavender) 100%);
+      border-radius: 10px;
+    }
+
+    .table-container::-webkit-scrollbar-thumb:hover {
+      background: linear-gradient(135deg, #ff6b8f 0%, #c399e8 100%);
+    }
+
+    .step-number {
+      width: 45px;
+      height: 45px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--accent-coral) 0%, var(--accent-lavender) 100%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      flex-shrink: 0;
+      color: white;
+      font-family: 'Comfortaa', cursive;
+      box-shadow: 0 4px 15px rgba(255, 139, 171, 0.3);
+    }
+
+    .icon-wrapper {
+      width: 60px;
+      height: 60px;
+      border-radius: 20px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    }
+
+    .icon-coral {
+      background: linear-gradient(135deg, var(--accent-coral) 0%, #ff6b8f 100%);
+    }
+
+    .icon-sky {
+      background: linear-gradient(135deg, var(--accent-sky) 0%, #7ec8ff 100%);
+    }
+
+    .icon-mint {
+      background: linear-gradient(135deg, var(--accent-mint) 0%, #8ff0b0 100%);
+    }
+
+    .icon-peach {
+      background: linear-gradient(135deg, var(--accent-peach) 0%, #ffab7a 100%);
+    }
+
+    .icon-lavender {
+      background: linear-gradient(135deg, var(--accent-lavender) 0%, #c399e8 100%);
+    }
+
+    header {
+      background: rgba(255, 255, 255, 0.9);
+      backdrop-filter: blur(10px);
+      border-bottom: 2px solid rgba(255, 139, 171, 0.1);
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+
+    .gradient-text {
+      background: linear-gradient(135deg, var(--accent-coral) 0%, var(--accent-lavender) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+  </style>
+  <style>@view-transition { navigation: auto; }</style>
+  <script src="/_sdk/data_sdk.js" type="text/javascript"></script>
+ </head>
+ <body class="h-full overflow-auto"><!-- Floating Clouds Background -->
+  <svg class="cloud cloud1" width="200" height="100" viewbox="0 0 200 100" fill="none"><ellipse cx="50" cy="60" rx="35" ry="25" fill="#ffc4db" opacity="0.6" /> <ellipse cx="90" cy="55" rx="45" ry="30" fill="#ffc4db" opacity="0.6" /> <ellipse cx="130" cy="60" rx="35" ry="25" fill="#ffc4db" opacity="0.6" />
+  </svg>
+  <svg class="cloud cloud2" width="180" height="90" viewbox="0 0 180 90" fill="none"><ellipse cx="45" cy="50" rx="30" ry="22" fill="#d4e7ff" opacity="0.6" /> <ellipse cx="80" cy="48" rx="40" ry="26" fill="#d4e7ff" opacity="0.6" /> <ellipse cx="115" cy="52" rx="32" ry="23" fill="#d4e7ff" opacity="0.6" />
+  </svg>
+  <svg class="cloud cloud3" width="220" height="110" viewbox="0 0 220 110" fill="none"><ellipse cx="55" cy="65" rx="38" ry="28" fill="#e0f8e8" opacity="0.6" /> <ellipse cx="100" cy="60" rx="50" ry="35" fill="#e0f8e8" opacity="0.6" /> <ellipse cx="145" cy="65" rx="38" ry="28" fill="#e0f8e8" opacity="0.6" />
+  </svg>
+  <svg class="cloud cloud4" width="190" height="95" viewbox="0 0 190 95" fill="none"><ellipse cx="48" cy="55" rx="33" ry="24" fill="#ffe9d4" opacity="0.6" /> <ellipse cx="85" cy="52" rx="42" ry="28" fill="#ffe9d4" opacity="0.6" /> <ellipse cx="120" cy="56" rx="34" ry="25" fill="#ffe9d4" opacity="0.6" />
+  </svg>
+  <svg class="cloud cloud5" width="160" height="80" viewbox="0 0 160 80" fill="none"><ellipse cx="40" cy="45" rx="28" ry="20" fill="#f3e0ff" opacity="0.6" /> <ellipse cx="70" cy="42" rx="35" ry="24" fill="#f3e0ff" opacity="0.6" /> <ellipse cx="100" cy="46" rx="29" ry="21" fill="#f3e0ff" opacity="0.6" />
+  </svg>
+  <div class="w-full min-h-full"><!-- Header -->
+   <header>
+    <div class="max-w-7xl mx-auto px-6 py-6 flex items-center justify-between">
+     <div class="flex items-center gap-5">
+      <div class="icon-wrapper icon-coral bounce">
+       <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M7 12l3-3 3 3 4-4M8 21l4-4 4 4M3 4h18M4 4h16v12a1 1 0 01-1 1H5a1 1 0 01-1-1V4z" />
+       </svg>
+      </div>
+      <div>
+       <h1 class="text-2xl font-bold gradient-text heading-font" id="dashboard-title">DataFlow Analytics</h1>
+       <p class="text-sm font-medium" style="color: var(--text-secondary);" id="subtitle-text">Professional Data Analysis Platform</p>
+      </div>
+     </div>
+     <div><span class="badge badge-coral" id="status-badge">
+       <svg class="w-4 h-4" fill="currentColor" viewbox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
+       </svg> Ready </span>
+     </div>
+    </div>
+   </header><!-- Main Content -->
+   <main class="max-w-7xl mx-auto px-6 py-10"><!-- Upload Section -->
+    <section id="upload-section" class="mb-10">
+     <div class="card p-10">
+      <div class="flex items-start justify-between mb-8">
+       <div>
+        <h2 class="text-3xl font-bold mb-3 heading-font" style="color: var(--text-primary);">Upload Dataset</h2>
+        <p class="text-lg" style="color: var(--text-secondary);">Upload your CSV or Excel file to begin analysis</p>
+       </div>
+      </div>
+      <div class="upload-area p-16 text-center" id="upload-zone"><input type="file" id="file-input" accept=".csv,.xlsx,.xls" class="hidden">
+       <div class="mb-6">
+        <svg class="w-24 h-24 mx-auto bounce" style="color: var(--accent-coral);" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+        </svg>
+       </div>
+       <h3 class="text-2xl font-bold mb-3 heading-font" style="color: var(--text-primary);">Drop your file here</h3>
+       <p class="mb-5 text-lg" style="color: var(--text-secondary);">or click to browse your computer</p>
+       <p class="text-sm font-semibold" style="color: var(--text-secondary);">Supports .csv, .xlsx, .xls formats • Max 50MB</p>
+      </div>
+      <div id="file-info" class="hidden mt-8 p-6 rounded-3xl" style="background: linear-gradient(135deg, rgba(255, 139, 171, 0.1) 0%, rgba(168, 216, 255, 0.1) 100%); border: 2px solid var(--border-light);">
+       <div class="flex items-center justify-between">
+        <div class="flex items-center gap-5">
+         <div class="icon-wrapper icon-sky">
+          <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+          </svg>
+         </div>
+         <div>
+          <p class="font-bold text-xl heading-font" style="color: var(--text-primary);" id="file-name">filename.csv</p>
+          <p class="text-sm font-semibold" style="color: var(--text-secondary);" id="file-size">0 KB</p>
+         </div>
+        </div><button class="btn-secondary" onclick="clearFile()">
+         <svg class="w-5 h-5 inline mr-2" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+         </svg> Remove </button>
+       </div>
+      </div>
+     </div>
+    </section><!-- Controls Section -->
+    <section id="controls-section" class="hidden mb-10">
+     <div class="card p-8">
+      <h3 class="text-xl font-bold mb-6 heading-font" style="color: var(--text-primary);">Analysis Configuration</h3>
+      <div class="grid md:grid-cols-4 gap-5">
+       <div><label class="block text-sm font-bold mb-3 heading-font" style="color: var(--text-primary);">Dataset Scope</label> <select id="scope-select" class="select-field" onchange="toggleRowInput()"> <option value="all">All Rows</option> <option value="top">Top N Rows</option> <option value="bottom">Bottom N Rows</option> </select>
+       </div>
+       <div id="row-input-wrapper" class="hidden"><label class="block text-sm font-bold mb-3 heading-font" style="color: var(--text-primary);">Number of Rows</label> <input type="number" id="row-count" class="input-field" value="10" min="1" placeholder="10">
+       </div>
+       <div class="md:col-span-2 flex items-end"><button class="btn-primary w-full" onclick="runAnalysis()">
+         <svg class="w-5 h-5 inline mr-2" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
+         </svg> Analyze Dataset </button>
+       </div>
+      </div>
+     </div>
+    </section><!-- Tabs Navigation -->
+    <div id="tabs-nav" class="hidden mb-8 flex justify-center">
+     <div class="flex gap-3"><button class="tab-btn active tab-overview" onclick="showTab('overview', event)">
+       <svg class="w-5 h-5 inline mr-2" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+       </svg> Overview </button> <button class="tab-btn tab-charts" onclick="showTab('charts', event)">
+       <svg class="w-5 h-5 inline mr-2" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+       </svg> Charts </button> <button class="tab-btn tab-data" onclick="showTab('data', event)">
+       <svg class="w-5 h-5 inline mr-2" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M3 14h18m-9-4v8m-7 0h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
+       </svg> Data Table </button> <button class="tab-btn tab-insights" onclick="showTab('insights', event)">
+       <svg class="w-5 h-5 inline mr-2" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
+       </svg> Insights </button>
+     </div>
+    </div><!-- Overview Tab -->
+    <div id="tab-overview" class="tab-content hidden">
+     <div class="grid md:grid-cols-4 gap-6 mb-10">
+      <div class="kpi-card kpi-card-1 fade-in">
+       <p class="text-xs font-bold mb-3 heading-font" style="color: var(--text-secondary); letter-spacing: 1.5px;">TOTAL ROWS</p>
+       <p class="stat-value" id="stat-rows">0</p>
+      </div>
+      <div class="kpi-card kpi-card-2 fade-in" style="animation-delay: 0.1s;">
+       <p class="text-xs font-bold mb-3 heading-font" style="color: var(--text-secondary); letter-spacing: 1.5px;">COLUMNS</p>
+       <p class="stat-value" id="stat-columns">0</p>
+      </div>
+      <div class="kpi-card kpi-card-3 fade-in" style="animation-delay: 0.2s;">
+       <p class="text-xs font-bold mb-3 heading-font" style="color: var(--text-secondary); letter-spacing: 1.5px;">NUMERIC</p>
+       <p class="stat-value" id="stat-numeric">0</p>
+      </div>
+      <div class="kpi-card kpi-card-4 fade-in" style="animation-delay: 0.3s;">
+       <p class="text-xs font-bold mb-3 heading-font" style="color: var(--text-secondary); letter-spacing: 1.5px;">TEXT</p>
+       <p class="stat-value" id="stat-text">0</p>
+      </div>
+     </div>
+     <div class="card p-8">
+      <h3 class="text-2xl font-bold mb-8 heading-font" style="color: var(--text-primary);">Column Details</h3>
+      <div id="column-details" class="space-y-4"></div>
+     </div>
+    </div><!-- Charts Tab -->
+    <div id="tab-charts" class="tab-content hidden">
+     <div id="charts-grid" class="grid md:grid-cols-2 gap-6"></div>
+    </div><!-- Data Table Tab -->
+    <div id="tab-data" class="tab-content hidden">
+     <div class="card p-8">
+      <h3 class="text-2xl font-bold mb-8 heading-font" style="color: var(--text-primary);">Data Preview</h3>
+      <div class="table-container">
+       <table>
+        <thead id="table-head"></thead>
+        <tbody id="table-body"></tbody>
+       </table>
+      </div>
+     </div>
+    </div><!-- Insights Tab -->
+    <div id="tab-insights" class="tab-content hidden">
+     <div class="space-y-8">
+      <div class="card p-8">
+       <h3 class="text-3xl font-bold mb-5 heading-font" style="color: var(--text-primary);">Dashboard Intelligence</h3>
+       <p style="color: var(--text-secondary); line-height: 1.9; font-size: 16px;">This platform provides instant, actionable insights from your datasets through intelligent analysis, automated visualizations, and comprehensive KPI tracking. Designed for data analysts, business intelligence professionals, and decision-makers who need rapid data understanding.</p>
+      </div>
+      <div class="insight-card">
+       <h4 class="text-xl font-bold mb-5 flex items-center gap-3 heading-font" style="color: var(--text-primary);">
+        <svg class="w-7 h-7" style="color: var(--accent-coral);" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+        </svg> Leveraging Your Data for Dashboards</h4>
+       <ul class="space-y-4" style="color: var(--text-secondary); font-size: 15px; line-height: 1.7;">
+        <li class="flex gap-4"><span style="color: var(--accent-coral); font-size: 24px; font-weight: bold;">•</span> <span><strong style="color: var(--text-primary); font-weight: 700;">Identify Key Metrics:</strong> Extract numeric columns representing business KPIs (revenue, conversions, performance indicators)</span></li>
+        <li class="flex gap-4"><span style="color: var(--accent-sky); font-size: 24px; font-weight: bold;">•</span> <span><strong style="color: var(--text-primary); font-weight: 700;">Establish Time Dimensions:</strong> Locate date/year columns for temporal analysis and trend identification</span></li>
+        <li class="flex gap-4"><span style="color: var(--accent-mint); font-size: 24px; font-weight: bold;">•</span> <span><strong style="color: var(--text-primary); font-weight: 700;">Map Categories:</strong> Use text columns for segmentation (regions, products, customer types)</span></li>
+        <li class="flex gap-4"><span style="color: var(--accent-peach); font-size: 24px; font-weight: bold;">•</span> <span><strong style="color: var(--text-primary); font-weight: 700;">Create Data Relationships:</strong> Identify common fields for linking multiple datasets</span></li>
+        <li class="flex gap-4"><span style="color: var(--accent-lavender); font-size: 24px; font-weight: bold;">•</span> <span><strong style="color: var(--text-primary); font-weight: 700;">Define Business Objectives:</strong> Align metrics with strategic goals for focused reporting</span></li>
+       </ul>
+      </div>
+      <div class="insight-card" style="border-left-color: var(--accent-sky);">
+       <h4 class="text-xl font-bold mb-5 flex items-center gap-3 heading-font" style="color: var(--text-primary);">
+        <svg class="w-7 h-7" style="color: var(--accent-sky);" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+        </svg> Recreating This Dashboard in BI Tools</h4>
+       <div class="space-y-5">
+        <div class="flex gap-5">
+         <div class="step-number">
+          1
+         </div>
+         <div><strong class="text-lg heading-font" style="color: var(--text-primary);">Data Connection</strong>
+          <p style="color: var(--text-secondary); margin-top: 8px; line-height: 1.6;">Import CSV/Excel into your BI platform's data connector interface</p>
+         </div>
+        </div>
+        <div class="flex gap-5">
+         <div class="step-number">
+          2
+         </div>
+         <div><strong class="text-lg heading-font" style="color: var(--text-primary);">Data Modeling</strong>
+          <p style="color: var(--text-secondary); margin-top: 8px; line-height: 1.6;">Configure relationships, calculated fields, and proper data types</p>
+         </div>
+        </div>
+        <div class="flex gap-5">
+         <div class="step-number">
+          3
+         </div>
+         <div><strong class="text-lg heading-font" style="color: var(--text-primary);">Build Visualizations</strong>
+          <p style="color: var(--text-secondary); margin-top: 8px; line-height: 1.6;">Construct charts matching these patterns: trend analysis, category comparisons, KPI cards</p>
+         </div>
+        </div>
+        <div class="flex gap-5">
+         <div class="step-number">
+          4
+         </div>
+         <div><strong class="text-lg heading-font" style="color: var(--text-primary);">Add Interactivity</strong>
+          <p style="color: var(--text-secondary); margin-top: 8px; line-height: 1.6;">Implement filters, date slicers, and drill-through capabilities</p>
+         </div>
+        </div>
+        <div class="flex gap-5">
+         <div class="step-number">
+          5
+         </div>
+         <div><strong class="text-lg heading-font" style="color: var(--text-primary);">Layout Design</strong>
+          <p style="color: var(--text-secondary); margin-top: 8px; line-height: 1.6;">Organize components with clear hierarchy and professional spacing</p>
+         </div>
+        </div>
+        <div class="flex gap-5">
+         <div class="step-number">
+          6
+         </div>
+         <div><strong class="text-lg heading-font" style="color: var(--text-primary);">Deploy &amp; Schedule</strong>
+          <p style="color: var(--text-secondary); margin-top: 8px; line-height: 1.6;">Publish dashboard and configure automated data refresh schedules</p>
+         </div>
+        </div>
+       </div>
+      </div>
+      <div class="card p-8">
+       <h3 class="text-2xl font-bold mb-8 heading-font" style="color: var(--text-primary);">BI Tool Learning Resources</h3>
+       <div class="mb-8">
+        <h4 class="font-bold mb-5 flex items-center gap-3 text-lg heading-font" style="color: var(--text-primary);">
+         <div class="icon-wrapper icon-coral" style="width: 40px; height: 40px; border-radius: 12px;">
+          <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
+          </svg>
+         </div> Microsoft Power BI</h4>
+        <div class="grid md:grid-cols-2 gap-5"><a href="https://learn.microsoft.com/en-us/power-bi/" target="_blank" rel="noopener noreferrer" class="resource-card">
+          <div class="icon-wrapper icon-sky">
+           <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+           </svg>
+          </div>
+          <div>
+           <p class="font-bold heading-font" style="color: var(--text-primary);">Official Documentation</p>
+           <p class="text-sm" style="color: var(--text-secondary);">Microsoft Learn Resources</p>
+          </div></a> <a href="https://www.youtube.com/results?search_query=power+bi+tutorial+for+beginners" target="_blank" rel="noopener noreferrer" class="resource-card">
+          <div class="icon-wrapper" style="background: #ff0000;">
+           <svg class="w-6 h-6 text-white" fill="currentColor" viewbox="0 0 24 24"><path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z" />
+           </svg>
+          </div>
+          <div>
+           <p class="font-bold heading-font" style="color: var(--text-primary);">Video Tutorials</p>
+           <p class="text-sm" style="color: var(--text-secondary);">Beginner Course Series</p>
+          </div></a>
+        </div>
+       </div>
+       <div class="mb-8">
+        <h4 class="font-bold mb-5 flex items-center gap-3 text-lg heading-font" style="color: var(--text-primary);">
+         <div class="icon-wrapper icon-sky" style="width: 40px; height: 40px; border-radius: 12px;">
+          <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 12l3-3 3 3 4-4M8 21l4-4 4 4M3 4h18M4 4h16v12a1 1 0 01-1 1H5a1 1 0 01-1-1V4z" />
+          </svg>
+         </div> Tableau</h4>
+        <div class="grid md:grid-cols-2 gap-5"><a href="https://www.tableau.com/learn/training" target="_blank" rel="noopener noreferrer" class="resource-card">
+          <div class="icon-wrapper icon-mint">
+           <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+           </svg>
+          </div>
+          <div>
+           <p class="font-bold heading-font" style="color: var(--text-primary);">Official Training</p>
+           <p class="text-sm" style="color: var(--text-secondary);">Free Learning Paths</p>
+          </div></a> <a href="https://www.youtube.com/results?search_query=tableau+tutorial+for+beginners" target="_blank" rel="noopener noreferrer" class="resource-card">
+          <div class="icon-wrapper" style="background: #ff0000;">
+           <svg class="w-6 h-6 text-white" fill="currentColor" viewbox="0 0 24 24"><path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z" />
+           </svg>
+          </div>
+          <div>
+           <p class="font-bold heading-font" style="color: var(--text-primary);">Beginner Guides</p>
+           <p class="text-sm" style="color: var(--text-secondary);">Complete Video Series</p>
+          </div></a>
+        </div>
+       </div>
+       <div>
+        <h4 class="font-bold mb-5 flex items-center gap-3 text-lg heading-font" style="color: var(--text-primary);">
+         <div class="icon-wrapper icon-peach" style="width: 40px; height: 40px; border-radius: 12px;">
+          <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+          </svg>
+         </div> Google Looker Studio</h4>
+        <div class="grid md:grid-cols-2 gap-5"><a href="https://support.google.com/looker-studio/" target="_blank" rel="noopener noreferrer" class="resource-card">
+          <div class="icon-wrapper icon-lavender">
+           <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+           </svg>
+          </div>
+          <div>
+           <p class="font-bold heading-font" style="color: var(--text-primary);">Help Center</p>
+           <p class="text-sm" style="color: var(--text-secondary);">Support Documentation</p>
+          </div></a> <a href="https://www.youtube.com/results?search_query=google+looker+studio+tutorial" target="_blank" rel="noopener noreferrer" class="resource-card">
+          <div class="icon-wrapper" style="background: #ff0000;">
+           <svg class="w-6 h-6 text-white" fill="currentColor" viewbox="0 0 24 24"><path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z" />
+           </svg>
+          </div>
+          <div>
+           <p class="font-bold heading-font" style="color: var(--text-primary);">Tutorial Videos</p>
+           <p class="text-sm" style="color: var(--text-secondary);">Comprehensive Guides</p>
+          </div></a>
+        </div>
+       </div>
+      </div>
+      <div class="insight-card" style="border-left-color: var(--accent-mint);">
+       <h4 class="text-xl font-bold mb-5 flex items-center gap-3 heading-font" style="color: var(--text-primary);">
+        <svg class="w-7 h-7" style="color: var(--accent-mint);" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+        </svg> Dashboard Best Practices</h4>
+       <ul class="space-y-3" style="color: var(--text-secondary); line-height: 1.7; font-size: 15px;">
+        <li class="flex gap-4"><span style="color: var(--accent-mint); font-size: 20px; font-weight: bold;">✓</span> <span>Focus dashboards on a single objective or target audience</span></li>
+        <li class="flex gap-4"><span style="color: var(--accent-mint); font-size: 20px; font-weight: bold;">✓</span> <span>Position critical metrics prominently (top-left for Western audiences)</span></li>
+        <li class="flex gap-4"><span style="color: var(--accent-mint); font-size: 20px; font-weight: bold;">✓</span> <span>Maintain consistent color schemes and formatting standards</span></li>
+        <li class="flex gap-4"><span style="color: var(--accent-mint); font-size: 20px; font-weight: bold;">✓</span> <span>Provide interactive filters for user-driven exploration</span></li>
+        <li class="flex gap-4"><span style="color: var(--accent-mint); font-size: 20px; font-weight: bold;">✓</span> <span>Include contextual tooltips and clear legends</span></li>
+        <li class="flex gap-4"><span style="color: var(--accent-mint); font-size: 20px; font-weight: bold;">✓</span> <span>Validate performance with production-scale data volumes</span></li>
+       </ul>
+      </div>
+     </div>
+    </div>
+   </main>
+  </div>
+  <script>
+    const defaultConfig = {
+      dashboard_title: 'DataFlow Analytics',
+      subtitle_text: 'Professional Data Analysis Platform',
+      bg_primary: '#fef6f9',
+      bg_card: '#ffffff',
+      accent_coral: '#ff8fab',
+      accent_sky: '#a8d8ff',
+      accent_mint: '#b4f8c8',
+      font_family: 'Quicksand',
+      font_size: 14
+    };
+
+    let rawData = null;
+    let processedData = null;
+    let allCharts = [];
+
+    // File Upload
+    const uploadZone = document.getElementById('upload-zone');
+    const fileInput = document.getElementById('file-input');
+
+    uploadZone.addEventListener('click', () => fileInput.click());
+
+    uploadZone.addEventListener('dragover', (e) => {
+      e.preventDefault();
+      uploadZone.classList.add('dragging');
+    });
+
+    uploadZone.addEventListener('dragleave', () => {
+      uploadZone.classList.remove('dragging');
+    });
+
+    uploadZone.addEventListener('drop', (e) => {
+      e.preventDefault();
+      uploadZone.classList.remove('dragging');
+      const file = e.dataTransfer.files[0];
+      if (file) processFile(file);
+    });
+
+    fileInput.addEventListener('change', (e) => {
+      const file = e.target.files[0];
+      if (file) processFile(file);
+    });
+
+    function processFile(file) {
+      const validTypes = ['text/csv', 'application/vnd.ms-excel', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'];
+      const ext = file.name.substring(file.name.lastIndexOf('.')).toLowerCase();
+
+      if (!validTypes.includes(file.type) && !['.csv', '.xlsx', '.xls'].includes(ext)) {
+        showNotification('Please upload a valid CSV or Excel file', 'error');
+        return;
+      }
+
+      document.getElementById('file-name').textContent = file.name;
+      document.getElementById('file-size').textContent = formatBytes(file.size);
+      document.getElementById('file-info').classList.remove('hidden');
+      document.getElementById('status-badge').innerHTML = `
+        <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+          <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+        </svg>
+        File Loaded
+      `;
+      document.getElementById('status-badge').className = 'badge badge-mint';
+
+      const reader = new FileReader();
+
+      if (ext === '.csv') {
+        reader.onload = (e) => {
+          rawData = parseCSV(e.target.result);
+          showControls();
+        };
+        reader.readAsText(file);
+      } else {
+        reader.onload = (e) => {
+          const data = new Uint8Array(e.target.result);
+          const workbook = XLSX.read(data, { type: 'array' });
+          const sheet = workbook.Sheets[workbook.SheetNames[0]];
+          rawData = XLSX.utils.sheet_to_json(sheet, { header: 1 });
+          showControls();
+        };
+        reader.readAsArrayBuffer(file);
+      }
+    }
+
+    function parseCSV(text) {
+      const lines = text.split('\n').filter(l => l.trim());
+      return lines.map(line => {
+        const values = [];
+        let current = '';
+        let inQuotes = false;
+
+        for (let char of line) {
+          if (char === '"') {
+            inQuotes = !inQuotes;
+          } else if (char === ',' && !inQuotes) {
+            values.push(current.trim());
+            current = '';
+          } else {
+            current += char;
+          }
+        }
+        values.push(current.trim());
+        return values;
+      });
+    }
+
+    function formatBytes(bytes) {
+      if (bytes < 1024) return bytes + ' B';
+      if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(2) + ' KB';
+      return (bytes / (1024 * 1024)).toFixed(2) + ' MB';
+    }
+
+    function clearFile() {
+      rawData = null;
+      processedData = null;
+      fileInput.value = '';
+      document.getElementById('file-info').classList.add('hidden');
+      document.getElementById('controls-section').classList.add('hidden');
+      document.getElementById('tabs-nav').classList.add('hidden');
+      document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
+      document.getElementById('status-badge').innerHTML = `
+        <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+          <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+        </svg>
+        Ready
+      `;
+      document.getElementById('status-badge').className = 'badge badge-coral';
+      clearCharts();
+    }
+
+    function showControls() {
+      document.getElementById('controls-section').classList.remove('hidden');
+    }
+
+    function toggleRowInput() {
+      const scope = document.getElementById('scope-select').value;
+      const wrapper = document.getElementById('row-input-wrapper');
+      
+      if (scope === 'all') {
+        wrapper.classList.add('hidden');
+      } else {
+        wrapper.classList.remove('hidden');
+      }
+    }
+
+    function runAnalysis() {
+      if (!rawData || rawData.length < 2) {
+        showNotification('No valid data to analyze', 'error');
+        return;
+      }
+
+      const scope = document.getElementById('scope-select').value;
+      const rowCount = parseInt(document.getElementById('row-count').value) || 10;
+
+      const headers = rawData[0];
+      let rows = rawData.slice(1);
+
+      if (scope === 'top') {
+        rows = rows.slice(0, rowCount);
+      } else if (scope === 'bottom') {
+        rows = rows.slice(-rowCount);
+      }
+
+      processedData = rows.map(row => {
+        const obj = {};
+        headers.forEach((h, i) => {
+          obj[h] = row[i];
+        });
+        return obj;
+      });
+
+      document.getElementById('tabs-nav').classList.remove('hidden');
+      document.getElementById('status-badge').innerHTML = `
+        <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+          <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+        </svg>
+        Analyzed
+      `;
+      document.getElementById('status-badge').className = 'badge badge-sky';
+      
+      showTab('overview', { target: document.querySelector('.tab-btn.tab-overview') });
+      displayOverview(headers, processedData);
+    }
+
+    function displayOverview(headers, data) {
+      document.getElementById('stat-rows').textContent = data.length.toLocaleString();
+      document.getElementById('stat-columns').textContent = headers.length;
+
+      const numericCols = [];
+      const textCols = [];
+
+      headers.forEach(h => {
+        const samples = data.slice(0, 10).map(r => r[h]);
+        const numCount = samples.filter(v => !isNaN(parseFloat(v)) && isFinite(v)).length;
+        
+        if (numCount > 5) {
+          numericCols.push(h);
+        } else {
+          textCols.push(h);
+        }
+      });
+
+      document.getElementById('stat-numeric').textContent = numericCols.length;
+      document.getElementById('stat-text').textContent = textCols.length;
+
+      const detailsContainer = document.getElementById('column-details');
+      detailsContainer.innerHTML = '';
+
+      headers.forEach((h, idx) => {
+        const isNum = numericCols.includes(h);
+        const sample = data[0][h];
+        
+        const div = document.createElement('div');
+        div.className = 'flex items-center justify-between p-5 rounded-2xl fade-in';
+        div.style.background = 'linear-gradient(135deg, rgba(255, 255, 255, 0.8) 0%, rgba(255, 255, 255, 0.95) 100%)';
+        div.style.border = '2px solid var(--border-light)';
+        div.style.animationDelay = `${idx * 0.05}s`;
+        
+        div.innerHTML = `
+          <div class="flex items-center gap-4">
+            <span class="badge ${isNum ? 'badge-sky' : 'badge-peach'}">
+              ${isNum ? 'NUMERIC' : 'TEXT'}
+            </span>
+            <span class="font-bold text-lg heading-font" style="color: var(--text-primary);">${h}</span>
+          </div>
+          <span class="text-sm font-semibold" style="color: var(--text-secondary);">${sample || 'N/A'}</span>
+        `;
+        
+        detailsContainer.appendChild(div);
+      });
+
+      buildCharts(headers, data, numericCols, textCols);
+      renderDataTable(headers, data);
+    }
+
+    function buildCharts(headers, data, numericCols, textCols) {
+      clearCharts();
+      const container = document.getElementById('charts-grid');
+      container.innerHTML = '';
+
+      const dateCol = headers.find(h => 
+        h.toLowerCase().includes('date') || 
+        h.toLowerCase().includes('year') ||
+        h.toLowerCase().includes('time')
+      );
+
+      if (dateCol && numericCols.length > 0) {
+        createLineChart(dateCol, numericCols[0], data);
+      }
+
+      if (textCols.length > 0 && numericCols.length > 0) {
+        createBarChart(textCols[0], numericCols[0], data);
+      }
+
+      if (numericCols.length >= 2) {
+        createScatterChart(numericCols[0], numericCols[1], data);
+      }
+
+      if (textCols.length > 0 && numericCols.length > 0) {
+        const catCol = textCols[textCols.length > 1 ? 1 : 0];
+        const metCol = numericCols[numericCols.length > 1 ? 1 : 0];
+        createDoughnutChart(catCol, metCol, data);
+      }
+    }
+
+    function createLineChart(xCol, yCol, data) {
+      const wrapper = document.createElement('div');
+      wrapper.className = 'chart-wrapper fade-in';
+      
+      const canvas = document.createElement('canvas');
+      wrapper.innerHTML = `<h4 class="text-lg font-bold mb-5 heading-font" style="color: var(--text-primary);">${yCol} Over ${xCol}</h4>`;
+      wrapper.appendChild(canvas);
+      document.getElementById('charts-grid').appendChild(wrapper);
+
+      const agg = {};
+      data.forEach(row => {
+        const x = row[xCol];
+        const y = parseFloat(row[yCol]);
+        if (x && !isNaN(y)) {
+          if (!agg[x]) agg[x] = { sum: 0, count: 0 };
+          agg[x].sum += y;
+          agg[x].count += 1;
+        }
+      });
+
+      const labels = Object.keys(agg).sort();
+      const values = labels.map(l => agg[l].sum / agg[l].count);
+
+      const chart = new Chart(canvas, {
+        type: 'line',
+        data: {
+          labels: labels,
+          datasets: [{
+            label: yCol,
+            data: values,
+            borderColor: '#ff8fab',
+            backgroundColor: 'rgba(255, 139, 171, 0.1)',
+            tension: 0.4,
+            fill: true,
+            borderWidth: 3,
+            pointBackgroundColor: '#ff8fab',
+            pointBorderColor: '#fff',
+            pointBorderWidth: 2,
+            pointRadius: 5
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { labels: { color: '#4a5568', font: { family: 'Quicksand', weight: '600' } } }
+          },
+          scales: {
+            x: { ticks: { color: '#718096', font: { family: 'Quicksand' } }, grid: { color: '#f0e6ea' } },
+            y: { ticks: { color: '#718096', font: { family: 'Quicksand' } }, grid: { color: '#f0e6ea' } }
+          }
+        }
+      });
+
+      allCharts.push(chart);
+    }
+
+    function createBarChart(catCol, metCol, data) {
+      const wrapper = document.createElement('div');
+      wrapper.className = 'chart-wrapper fade-in';
+      
+      const canvas = document.createElement('canvas');
+      wrapper.innerHTML = `<h4 class="text-lg font-bold mb-5 heading-font" style="color: var(--text-primary);">${metCol} by ${catCol}</h4>`;
+      wrapper.appendChild(canvas);
+      document.getElementById('charts-grid').appendChild(wrapper);
+
+      const agg = {};
+      data.forEach(row => {
+        const cat = row[catCol];
+        const val = parseFloat(row[metCol]);
+        if (cat && !isNaN(val)) {
+          if (!agg[cat]) agg[cat] = 0;
+          agg[cat] += val;
+        }
+      });
+
+      const labels = Object.keys(agg);
+      const values = labels.map(l => agg[l]);
+
+      const chart = new Chart(canvas, {
+        type: 'bar',
+        data: {
+          labels: labels,
+          datasets: [{
+            label: `Total ${metCol}`,
+            data: values,
+            backgroundColor: 'rgba(168, 216, 255, 0.7)',
+            borderColor: '#a8d8ff',
+            borderWidth: 2,
+            borderRadius: 10
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { labels: { color: '#4a5568', font: { family: 'Quicksand', weight: '600' } } }
+          },
+          scales: {
+            x: { ticks: { color: '#718096', font: { family: 'Quicksand' } }, grid: { color: '#f0e6ea' } },
+            y: { ticks: { color: '#718096', font: { family: 'Quicksand' } }, grid: { color: '#f0e6ea' } }
+          }
+        }
+      });
+
+      allCharts.push(chart);
+    }
+
+    function createScatterChart(col1, col2, data) {
+      const wrapper = document.createElement('div');
+      wrapper.className = 'chart-wrapper fade-in';
+      
+      const canvas = document.createElement('canvas');
+      wrapper.innerHTML = `<h4 class="text-lg font-bold mb-5 heading-font" style="color: var(--text-primary);">${col1} vs ${col2}</h4>`;
+      wrapper.appendChild(canvas);
+      document.getElementById('charts-grid').appendChild(wrapper);
+
+      const points = data.map(row => ({
+        x: parseFloat(row[col1]),
+        y: parseFloat(row[col2])
+      })).filter(p => !isNaN(p.x) && !isNaN(p.y));
+
+      const chart = new Chart(canvas, {
+        type: 'scatter',
+        data: {
+          datasets: [{
+            label: `${col1} vs ${col2}`,
+            data: points,
+            backgroundColor: 'rgba(180, 248, 200, 0.6)',
+            borderColor: '#b4f8c8',
+            borderWidth: 2,
+            pointRadius: 6
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { labels: { color: '#4a5568', font: { family: 'Quicksand', weight: '600' } } }
+          },
+          scales: {
+            x: { 
+              title: { display: true, text: col1, color: '#4a5568', font: { family: 'Quicksand', weight: '600' } },
+              ticks: { color: '#718096', font: { family: 'Quicksand' } }, 
+              grid: { color: '#f0e6ea' } 
+            },
+            y: { 
+              title: { display: true, text: col2, color: '#4a5568', font: { family: 'Quicksand', weight: '600' } },
+              ticks: { color: '#718096', font: { family: 'Quicksand' } }, 
+              grid: { color: '#f0e6ea' } 
+            }
+          }
+        }
+      });
+
+      allCharts.push(chart);
+    }
+
+    function createDoughnutChart(catCol, metCol, data) {
+      const wrapper = document.createElement('div');
+      wrapper.className = 'chart-wrapper fade-in';
+      
+      const canvas = document.createElement('canvas');
+      wrapper.innerHTML = `<h4 class="text-lg font-bold mb-5 heading-font" style="color: var(--text-primary);">Top ${catCol} by ${metCol}</h4>`;
+      wrapper.appendChild(canvas);
+      document.getElementById('charts-grid').appendChild(wrapper);
+
+      const agg = {};
+      data.forEach(row => {
+        const cat = row[catCol];
+        const val = parseFloat(row[metCol]);
+        if (cat && !isNaN(val)) {
+          if (!agg[cat]) agg[cat] = 0;
+          agg[cat] += val;
+        }
+      });
+
+      const sorted = Object.entries(agg).sort((a, b) => b[1] - a[1]).slice(0, 8);
+      const labels = sorted.map(s => s[0]);
+      const values = sorted.map(s => s[1]);
+
+      const chart = new Chart(canvas, {
+        type: 'doughnut',
+        data: {
+          labels: labels,
+          datasets: [{
+            data: values,
+            backgroundColor: [
+              'rgba(255, 139, 171, 0.8)',
+              'rgba(168, 216, 255, 0.8)',
+              'rgba(180, 248, 200, 0.8)',
+              'rgba(255, 196, 163, 0.8)',
+              'rgba(212, 181, 247, 0.8)',
+              'rgba(255, 182, 193, 0.8)',
+              'rgba(173, 216, 230, 0.8)',
+              'rgba(221, 160, 221, 0.8)'
+            ],
+            borderWidth: 3,
+            borderColor: '#ffffff'
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { 
+              position: 'right', 
+              labels: { color: '#4a5568', font: { family: 'Quicksand', weight: '600' }, padding: 15 } 
+            }
+          }
+        }
+      });
+
+      allCharts.push(chart);
+    }
+
+    function renderDataTable(headers, data) {
+      const thead = document.getElementById('table-head');
+      const tbody = document.getElementById('table-body');
+
+      thead.innerHTML = '<tr>' + headers.map(h => `<th>${h}</th>`).join('') + '</tr>';
+      tbody.innerHTML = data.slice(0, 100).map(row => 
+        '<tr>' + headers.map(h => `<td>${row[h] || ''}</td>`).join('') + '</tr>'
+      ).join('');
+    }
+
+    function clearCharts() {
+      allCharts.forEach(c => c.destroy());
+      allCharts = [];
+    }
+
+    function showTab(tabName, event) {
+      document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+      event.target.classList.add('active');
+
+      document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
+      document.getElementById(`tab-${tabName}`).classList.remove('hidden');
+    }
+
+    function showNotification(message, type) {
+      const notif = document.createElement('div');
+      notif.className = 'fixed bottom-8 right-8 px-8 py-5 rounded-3xl shadow-2xl z-50 fade-in';
+      notif.style.background = type === 'error' ? 
+        'linear-gradient(135deg, #ff6b8f 0%, #ff8fab 100%)' : 
+        'linear-gradient(135deg, #8ff0b0 0%, #b4f8c8 100%)';
+      notif.style.color = 'white';
+      notif.style.fontWeight = '700';
+      notif.style.fontFamily = "'Comfortaa', cursive";
+      notif.textContent = message;
+      document.body.appendChild(notif);
+
+      setTimeout(() => notif.remove(), 3000);
+    }
+
+    // Element SDK
+    async function onConfigChange(config) {
+      const title = config.dashboard_title || defaultConfig.dashboard_title;
+      const subtitle = config.subtitle_text || defaultConfig.subtitle_text;
+      const bgPrimary = config.bg_primary || defaultConfig.bg_primary;
+      const bgCard = config.bg_card || defaultConfig.bg_card;
+      const accentCoral = config.accent_coral || defaultConfig.accent_coral;
+      const accentSky = config.accent_sky || defaultConfig.accent_sky;
+      const accentMint = config.accent_mint || defaultConfig.accent_mint;
+      const fontFamily = config.font_family || defaultConfig.font_family;
+      const fontSize = config.font_size || defaultConfig.font_size;
+
+      const titleEl = document.getElementById('dashboard-title');
+      if (titleEl) titleEl.textContent = title;
+
+      const subtitleEl = document.getElementById('subtitle-text');
+      if (subtitleEl) subtitleEl.textContent = subtitle;
+
+      document.documentElement.style.setProperty('--bg-primary', bgPrimary);
+      document.documentElement.style.setProperty('--bg-card', bgCard);
+      document.documentElement.style.setProperty('--accent-coral', accentCoral);
+      document.documentElement.style.setProperty('--accent-sky', accentSky);
+      document.documentElement.style.setProperty('--accent-mint', accentMint);
+
+      document.body.style.fontFamily = `'${fontFamily}', sans-serif`;
+
+      const baseSize = fontSize;
+      document.querySelectorAll('h1').forEach(el => el.style.fontSize = `${baseSize * 1.7}px`);
+      document.querySelectorAll('h2').forEach(el => el.style.fontSize = `${baseSize * 2.1}px`);
+      document.querySelectorAll('h3').forEach(el => el.style.fontSize = `${baseSize * 1.4}px`);
+      document.querySelectorAll('h4').forEach(el => el.style.fontSize = `${baseSize * 1.15}px`);
+      document.querySelectorAll('p, span, td, th, button, input, select, li, label, a').forEach(el => {
+        if (!el.classList.contains('stat-value') && !el.classList.contains('step-number')) {
+          el.style.fontSize = `${baseSize}px`;
+        }
+      });
+    }
+
+    function mapToCapabilities(config) {
+      return {
+        recolorables: [
+          {
+            get: () => config.bg_primary || defaultConfig.bg_primary,
+            set: (v) => { config.bg_primary = v; window.elementSdk.setConfig({ bg_primary: v }); }
+          },
+          {
+            get: () => config.bg_card || defaultConfig.bg_card,
+            set: (v) => { config.bg_card = v; window.elementSdk.setConfig({ bg_card: v }); }
+          },
+          {
+            get: () => config.accent_coral || defaultConfig.accent_coral,
+            set: (v) => { config.accent_coral = v; window.elementSdk.setConfig({ accent_coral: v }); }
+          },
+          {
+            get: () => config.accent_sky || defaultConfig.accent_sky,
+            set: (v) => { config.accent_sky = v; window.elementSdk.setConfig({ accent_sky: v }); }
+          },
+          {
+            get: () => config.accent_mint || defaultConfig.accent_mint,
+            set: (v) => { config.accent_mint = v; window.elementSdk.setConfig({ accent_mint: v }); }
+          }
+        ],
+        borderables: [],
+        fontEditable: {
+          get: () => config.font_family || defaultConfig.font_family,
+          set: (v) => { config.font_family = v; window.elementSdk.setConfig({ font_family: v }); }
+        },
+        fontSizeable: {
+          get: () => config.font_size || defaultConfig.font_size,
+          set: (v) => { config.font_size = v; window.elementSdk.setConfig({ font_size: v }); }
+        }
+      };
+    }
+
+    function mapToEditPanelValues(config) {
+      return new Map([
+        ['dashboard_title', config.dashboard_title || defaultConfig.dashboard_title],
+        ['subtitle_text', config.subtitle_text || defaultConfig.subtitle_text]
+      ]);
+    }
+
+    if (window.elementSdk) {
+      window.elementSdk.init({
+        defaultConfig,
+        onConfigChange,
+        mapToCapabilities,
+        mapToEditPanelValues
+      });
+    }
+  </script>
+ <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9bb4271d416647d5',t:'MTc2Nzk2Mzk5Ni4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</html>
